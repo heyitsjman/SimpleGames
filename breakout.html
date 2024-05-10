@@ -32,6 +32,8 @@
     var brickOffsetLeft = 30;
     var bricks = [];
     var score = 0;
+    var isGameOver = false;
+    var isGameWon = false;
 
     for(var c=0; c<brickColumnCount; c++) {
         bricks[c] = [];
@@ -71,8 +73,7 @@
                         b.status = 0;
                         score++;
                         if(score == brickRowCount*brickColumnCount) {
-                            alert("YOU WIN, CONGRATULATIONS!");
-                            document.location.reload();
+                            isGameWon = true;
                         }
                     }
                 }
@@ -104,6 +105,18 @@
         ctx.fillText("Score: "+score, 8, 20);
     }
 
+    function drawMessages() {
+        if (isGameOver) {
+            ctx.font = "24px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("GAME OVER", canvas.width / 2 - 70, canvas.height / 2);
+        } else if (isGameWon) {
+            ctx.font = "24px Arial";
+            ctx.fillStyle = "green";
+            ctx.fillText("YOU WIN!", canvas.width / 2 - 70, canvas.height / 2);
+        }
+    }
+
     function drawBall() {
         ctx.beginPath();
         ctx.arc(x, y, ballRadius, 0, Math.PI*2);
@@ -122,12 +135,15 @@
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBricks();
-        drawBall();
-        drawPaddle();
-        drawScore();
-        collisionDetection();
-        
+        if (!isGameOver && !isGameWon) {
+            drawBricks();
+            drawBall();
+            drawPaddle();
+            drawScore();
+            collisionDetection();
+        }
+        drawMessages();
+
         if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
             dx = -dx;
         }
@@ -136,24 +152,22 @@
         } else if(y + dy > canvas.height-ballRadius) {
             if(x > paddleX && x < paddleX + paddleWidth) {
                 dy = -dy;
-            }
-            else {
-                alert("GAME OVER!");
-                document.location.reload();
-                clearInterval(interval); // Needed for Chrome to end game
+            } else {
+                isGameOver = true;
             }
         }
 
         if(rightPressed && paddleX < canvas.width-paddleWidth) {
             paddleX += 7;
-        }
-        else if(leftPressed && paddleX > 0) {
+        } else if(leftPressed && paddleX > 0) {
             paddleX -= 7;
         }
 
         x += dx;
         y += dy;
-        requestAnimationFrame(draw);
+        if (!isGameOver && !isGameWon) {
+            requestAnimationFrame(draw);
+        }
     }
 
     var gameStartButton = document.getElementById("gameStartButton");
